@@ -43,7 +43,7 @@ func getAllPokemon(resp http.ResponseWriter, req *http.Request) {
 	jsonInBytes, err := json.Marshal(Response {
 		Status: "success",
 		Message: "DATA_FOUND",
-		Data: Pokemon.Data,
+		Data: *(Pokemon.GetData()),
 	})
 
 	if err != nil {
@@ -62,7 +62,7 @@ func getPokemon(resp http.ResponseWriter, req *http.Request) {
 	resp.Header().Set("Content-Type", "application/json")
 
 	var data = Response{}
-	pokemons := Pokemon.Data
+	pokemons := *(Pokemon.GetData())
 	pokemonName := req.URL.Query().Get("name")
 
 	if len(pokemonName) > 0 {
@@ -108,7 +108,6 @@ func insertNewPokemon(resp http.ResponseWriter, req *http.Request) {
 	case "POST":
 		var newPokemon Pokemon.Type
 		json.NewDecoder(req.Body).Decode(&newPokemon)
-		fmt.Println(newPokemon)
 
 		if newPokemon.Name == "" || len(newPokemon.Types) <= 0 || len(newPokemon.Weaknesses) <= 0 {
 			resp.WriteHeader(400)
@@ -122,9 +121,11 @@ func insertNewPokemon(resp http.ResponseWriter, req *http.Request) {
 			return
 		}
 
-		newPokemon.ID = len(Pokemon.Data) + 1
-		fmt.Println(newPokemon)
-		Pokemon.Data = append(Pokemon.Data, newPokemon)
+		pokemons := Pokemon.GetData()
+		lastPokemon := (*pokemons)[len(*pokemons) - 1]
+		newPokemon.ID = lastPokemon.ID + 1
+
+		*pokemons = append(*pokemons, newPokemon)
 
 		jsonInBytes, err := json.Marshal(Response {
 			Status: "success",
@@ -179,10 +180,12 @@ func updatePokemon(resp http.ResponseWriter, req *http.Request)  {
 			Message: "DATA_NOT_FOUND",
 		})
 
-		for index, value := range Pokemon.Data {
+		pokemons := Pokemon.GetData()
+		for index, value := range *pokemons {
 			if strings.ToLower(value.Name) == strings.ToLower(existedPokemon.Name) {
 				isPokemonExisted = true
-				Pokemon.Data[index] = Pokemon.Type {
+				(*pokemons)[index] = Pokemon.Type {
+					ID: value.ID,
 					Name: existedPokemon.Name,
 					Types: existedPokemon.Types,
 					Weaknesses: existedPokemon.Weaknesses,
@@ -224,12 +227,13 @@ func deletePokemon(resp http.ResponseWriter, req *http.Request)  {
 			Message: "DATA_NOT_FOUND",
 		})
 
-		for index, value := range Pokemon.Data {
+		pokemons := Pokemon.GetData()
+		for index, value := range *pokemons {
 			if value.ID == pokemonId {
 				isPokemonExisted = true
-				copy(Pokemon.Data[index:], Pokemon.Data[index+1:])
-				Pokemon.Data[len(Pokemon.Data)-1] = Pokemon.Type{}
-				Pokemon.Data = Pokemon.Data[:len(Pokemon.Data)-1]
+				copy((*pokemons)[index:], (*pokemons)[index+1:])
+				(*pokemons)[len(*pokemons)-1] = Pokemon.Type{}
+				*pokemons = (*pokemons)[:len(*pokemons)-1]
 				break
 			}
 		}
