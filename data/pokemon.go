@@ -54,3 +54,13 @@ func GetData() *[]Type {
 
 	return PokemonData
 }
+
+func SearchData(pokemons []Type, pokemonId int) (int, interface{}) {
+	for index, value := range pokemons {
+		if value.ID == pokemonId {
+			return index, nil
+		}
+	}
+
+	return 0, "DATA_NOT_FOUND"
+}

@@ -18,16 +18,16 @@ func NewUpdatePokemonService(pokemonService PokemonService, updatedPokemon Pokem
 }
 
 func (service *UpdatePokemonService) Run() (int, Helpers.Response) {
-	for index, value := range *service.Pokemons {
-		if value.ID == service.updatedPokemon.ID {
-			(*service.Pokemons)[index] = Pokemon.Type {
-				ID: value.ID,
-				Name: service.updatedPokemon.Name,
-				Types: service.updatedPokemon.Types,
-				Weaknesses: service.updatedPokemon.Weaknesses,
-			}
-			return Helpers.SuccessResponse("UPDATE_SUCCESSFUL", nil)
+	pokemonIndex, err := Pokemon.SearchData(*service.Pokemons, service.updatedPokemon.ID)
+
+	if err == nil {
+		(*service.Pokemons)[pokemonIndex] = Pokemon.Type {
+			ID: (*service.Pokemons)[pokemonIndex].ID,
+			Name: service.updatedPokemon.Name,
+			Types: service.updatedPokemon.Types,
+			Weaknesses: service.updatedPokemon.Weaknesses,
 		}
+		return Helpers.SuccessResponse("UPDATE_SUCCESSFUL", nil)
 	}
 
 	return Helpers.DataNotFoundResponse()

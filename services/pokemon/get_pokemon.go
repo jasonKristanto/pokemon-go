@@ -1,6 +1,7 @@
 package services
 
 import (
+	Pokemon "pokemon-go/data"
 	Helpers "pokemon-go/helpers"
 )
 
@@ -17,10 +18,10 @@ func NewGetPokemonService(pokemonService PokemonService, pokemonId int) IBasePok
 }
 
 func (service *GetPokemonService) Run() (int, Helpers.Response) {
-	for _, value := range *service.Pokemons {
-		if value.ID == service.pokemonId {
-			return Helpers.SuccessResponse("DATA_FOUND", value)
-		}
+	pokemonIndex, err := Pokemon.SearchData(*service.Pokemons, service.pokemonId)
+
+	if err == nil {
+		return Helpers.SuccessResponse("DATA_FOUND", (*service.Pokemons)[pokemonIndex])
 	}
 
 	return Helpers.DataNotFoundResponse()

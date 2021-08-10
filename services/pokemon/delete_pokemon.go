@@ -18,14 +18,14 @@ func NewDeletePokemonService(pokemonService PokemonService, pokemonId int) IBase
 }
 
 func (service *DeletePokemonService) Run() (int, Helpers.Response) {
-	for index, value := range *service.Pokemons {
-		if value.ID == service.pokemonId {
-			copy((*service.Pokemons)[index:], (*service.Pokemons)[index+1:])
-			(*service.Pokemons)[len(*service.Pokemons)-1] = Pokemon.Type{}
-			*service.Pokemons = (*service.Pokemons)[:len(*service.Pokemons)-1]
+	pokemonIndex, err := Pokemon.SearchData(*service.Pokemons, service.pokemonId)
 
-			return Helpers.SuccessResponse("DELETE_SUCCESSFUL", nil)
-		}
+	if err == nil {
+		copy((*service.Pokemons)[pokemonIndex:], (*service.Pokemons)[pokemonIndex+1:])
+		(*service.Pokemons)[len(*service.Pokemons)-1] = Pokemon.Type{}
+		*service.Pokemons = (*service.Pokemons)[:len(*service.Pokemons)-1]
+
+		return Helpers.SuccessResponse("DELETE_SUCCESSFUL", nil)
 	}
 
 	return Helpers.DataNotFoundResponse()
