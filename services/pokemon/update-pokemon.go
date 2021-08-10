@@ -5,16 +5,26 @@ import (
 	Helpers "pokemon-go/helpers"
 )
 
-func UpdatePokemon(updatedPokemon Pokemon.Type) (int, Helpers.Response) {
-	pokemons := Pokemon.GetData()
+type UpdatePokemonService struct {
+	PokemonService
+	updatedPokemon Pokemon.Type
+}
 
-	for index, value := range *pokemons {
-		if value.ID == updatedPokemon.ID {
-			(*pokemons)[index] = Pokemon.Type {
+func NewUpdatePokemonService(pokemonService PokemonService, updatedPokemon Pokemon.Type) IBasePokemonService {
+	return &UpdatePokemonService{
+		PokemonService: pokemonService,
+		updatedPokemon: updatedPokemon,
+	}
+}
+
+func (service *UpdatePokemonService) Run() (int, Helpers.Response) {
+	for index, value := range *service.Pokemons {
+		if value.ID == service.updatedPokemon.ID {
+			(*service.Pokemons)[index] = Pokemon.Type {
 				ID: value.ID,
-				Name: updatedPokemon.Name,
-				Types: updatedPokemon.Types,
-				Weaknesses: updatedPokemon.Weaknesses,
+				Name: service.updatedPokemon.Name,
+				Types: service.updatedPokemon.Types,
+				Weaknesses: service.updatedPokemon.Weaknesses,
 			}
 			return Helpers.SuccessResponse("UPDATE_SUCCESSFUL", nil)
 		}

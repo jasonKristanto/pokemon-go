@@ -1,26 +1,27 @@
 package services
 
 import (
-	"net/http"
-	"strconv"
-
-	Pokemon "pokemon-go/data"
 	Helpers "pokemon-go/helpers"
 )
 
-func GetPokemon(req *http.Request) (int, Helpers.Response) {
-	pokemons := Pokemon.GetData()
-	pokemonId, err := strconv.Atoi(req.URL.Query().Get("id"))
+type GetPokemonService struct {
+	PokemonService
+	pokemonId int
+}
 
-	if err == nil {
-		for _, value := range *pokemons {
-			if value.ID == pokemonId {
-				return Helpers.SuccessResponse("DATA_FOUND", value)
-			}
+func NewGetPokemonService(pokemonService PokemonService, pokemonId int) IBasePokemonService {
+	return &GetPokemonService{
+		PokemonService: pokemonService,
+		pokemonId: pokemonId,
+	}
+}
+
+func (service *GetPokemonService) Run() (int, Helpers.Response) {
+	for _, value := range *service.Pokemons {
+		if value.ID == service.pokemonId {
+			return Helpers.SuccessResponse("DATA_FOUND", value)
 		}
-
-		return Helpers.DataNotFoundResponse()
 	}
 
-	return Helpers.InternalServerErrorResponse()
+	return Helpers.DataNotFoundResponse()
 }

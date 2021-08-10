@@ -1,30 +1,32 @@
 package services
 
 import (
-	"net/http"
-	"strconv"
-
 	Pokemon "pokemon-go/data"
 	Helpers "pokemon-go/helpers"
 )
 
-func DeletePokemon(req *http.Request) (int, Helpers.Response) {
-	pokemons := Pokemon.GetData()
-	pokemonId, err := strconv.Atoi(req.URL.Query().Get("id"))
+type DeletePokemonService struct {
+	PokemonService
+	pokemonId int
+}
 
-	if err == nil {
-		for index, value := range *pokemons {
-			if value.ID == pokemonId {
-				copy((*pokemons)[index:], (*pokemons)[index+1:])
-				(*pokemons)[len(*pokemons)-1] = Pokemon.Type{}
-				*pokemons = (*pokemons)[:len(*pokemons)-1]
+func NewDeletePokemonService(pokemonService PokemonService, pokemonId int) IBasePokemonService {
+	return &DeletePokemonService{
+		PokemonService: pokemonService,
+		pokemonId: pokemonId,
+	}
+}
 
-				return Helpers.SuccessResponse("DELETE_SUCCESSFUL", nil)
-			}
+func (service *DeletePokemonService) Run() (int, Helpers.Response) {
+	for index, value := range *service.Pokemons {
+		if value.ID == service.pokemonId {
+			copy((*service.Pokemons)[index:], (*service.Pokemons)[index+1:])
+			(*service.Pokemons)[len(*service.Pokemons)-1] = Pokemon.Type{}
+			*service.Pokemons = (*service.Pokemons)[:len(*service.Pokemons)-1]
+
+			return Helpers.SuccessResponse("DELETE_SUCCESSFUL", nil)
 		}
-
-		return Helpers.DataNotFoundResponse()
 	}
 
-	return Helpers.InternalServerErrorResponse()
+	return Helpers.DataNotFoundResponse()
 }
