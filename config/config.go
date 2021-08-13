@@ -32,7 +32,7 @@ type DatabaseConfigurations struct {
 
 var Configuration Configurations
 
-func Init()  {
+func init()  {
 	// Set the file name of the configurations file
 	viper.SetConfigName("config")
 
@@ -52,6 +52,4 @@ func Init()  {
 	if err != nil {
 		fmt.Printf("Unable to decode into struct, %v", err)
 	}
-
-	PgSqlConnection()
 }

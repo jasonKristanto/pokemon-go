@@ -20,6 +20,11 @@ func NewInsertPokemonService(
 }
 
 func (service *InsertPokemonService) Run() (int, helpers.Response) {
-	_ = service.Repository.Insert(service.newPokemon)
-	return helpers.SuccessResponse("INSERT_SUCCESSFUL", nil)
+	err := service.Repository.Insert(service.newPokemon)
+
+	if err == nil {
+		return helpers.SuccessResponse("INSERT_SUCCESSFUL", nil)
+	}
+
+	return helpers.InternalServerErrorResponse()
 }

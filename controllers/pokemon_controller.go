@@ -7,6 +7,7 @@ import (
 
 	"pokemon-go/helpers"
 	"pokemon-go/repository"
+	"pokemon-go/repository/database"
 	pokemonServices "pokemon-go/services/pokemon"
 )
 
@@ -15,13 +16,16 @@ var (
 	responseData helpers.Response
 )
 
-// JSON REPOSITORY
-var pokemonRepository = &repository.PokemonJsonRepo{}
+//// JSON REPOSITORY
+//var pokemonRepository = &repository.PokemonJsonRepo{}
+
+//PGSQL REPOSITORY
+var pokemonPgSqlRepository = &database.PokemonPgSqlRepo{}
 
 func GetAllPokemon(resp http.ResponseWriter, req *http.Request) {
 	if req.URL.Path == "/" {
 		getAllPokemonService := pokemonServices.NewGetAllPokemonService(
-			pokemonRepository,
+			pokemonPgSqlRepository,
 		)
 		httpCode, responseData = getAllPokemonService.Run()
 	} else {
@@ -36,7 +40,7 @@ func GetPokemon(resp http.ResponseWriter, req *http.Request) {
 
 	if err == nil {
 		getPokemonService := pokemonServices.NewGetPokemonService(
-			pokemonRepository,
+			pokemonPgSqlRepository,
 			pokemonId,
 		)
 		httpCode, responseData = getPokemonService.Run()
@@ -56,7 +60,7 @@ func InsertNewPokemon(resp http.ResponseWriter, req *http.Request) {
 		if newPokemon.Name != "" && len(newPokemon.Types) > 0 &&
 			len(newPokemon.Weaknesses) > 0 {
 			insertPokemonService := pokemonServices.NewInsertPokemonService(
-				pokemonRepository, newPokemon,
+				pokemonPgSqlRepository, newPokemon,
 			)
 			httpCode, responseData = insertPokemonService.Run()
 		} else {
@@ -78,7 +82,7 @@ func UpdatePokemon(resp http.ResponseWriter, req *http.Request) {
 		if updatedPokemon.ID > 0 && updatedPokemon.Name != "" &&
 			len(updatedPokemon.Types) > 0 && len(updatedPokemon.Weaknesses) > 0 {
 			updatePokemonService := pokemonServices.NewUpdatePokemonService(
-				pokemonRepository,
+				pokemonPgSqlRepository,
 				updatedPokemon,
 			)
 			httpCode, responseData = updatePokemonService.Run()
@@ -99,7 +103,7 @@ func DeletePokemon(resp http.ResponseWriter, req *http.Request) {
 
 		if err == nil {
 			deletePokemonService := pokemonServices.NewDeletePokemonService(
-				pokemonRepository,
+				pokemonPgSqlRepository,
 				pokemonId,
 			)
 			httpCode, responseData = deletePokemonService.Run()

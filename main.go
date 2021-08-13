@@ -10,7 +10,6 @@ import (
 )
 
 func main() {
-	config.Init()
 	routes()
 	serves()
 }

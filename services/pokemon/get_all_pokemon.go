@@ -22,5 +22,5 @@ func (service *GetAllPokemonService) Run() (int, helpers.Response) {
 		return helpers.SuccessResponse("DATA_FOUND", pokemons)
 	}
 
-	return helpers.DataNotFoundResponse()
+	return helpers.InternalServerErrorResponse()
 }
