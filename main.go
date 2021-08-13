@@ -3,23 +3,30 @@ package main
 import (
 	"fmt"
 	"net/http"
-	Controllers "pokemon-go/controllers"
+	"strconv"
+
+	"pokemon-go/config"
+	"pokemon-go/controllers"
 )
 
 func main() {
+	config.Init()
 	routes()
 	serves()
 }
 
 func serves() {
-	fmt.Println("Server is connected to http://localhost:10000")
-	http.ListenAndServe(":10000", nil)
+	serverPort := config.Configuration.Server.Port
+	serverHost := config.Configuration.Server.Host
+	server := fmt.Sprintf("http://%s:%d", serverHost, serverPort)
+	fmt.Println("Server is connected to ", server)
+	http.ListenAndServe(":" + strconv.Itoa(serverPort), nil)
 }
 
 func routes() {
-	http.HandleFunc("/", Controllers.GetAllPokemon)
-	http.HandleFunc("/pokemon", Controllers.GetPokemon)
-	http.HandleFunc("/insert-pokemon", Controllers.InsertNewPokemon)
-	http.HandleFunc("/update-pokemon", Controllers.UpdatePokemon)
-	http.HandleFunc("/delete-pokemon", Controllers.DeletePokemon)
+	http.HandleFunc("/", controllers.GetAllPokemon)
+	http.HandleFunc("/pokemon", controllers.GetPokemon)
+	http.HandleFunc("/insert-pokemon", controllers.InsertNewPokemon)
+	http.HandleFunc("/update-pokemon", controllers.UpdatePokemon)
+	http.HandleFunc("/delete-pokemon", controllers.DeletePokemon)
 }

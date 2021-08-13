@@ -1,0 +1,13 @@
+server:
+  host:
+  port:
+
+postgres:
+  database:
+  username:
+  password:
+  host:
+  port:
+  max_conn:
+  max_idle_conn:
+  timeout:

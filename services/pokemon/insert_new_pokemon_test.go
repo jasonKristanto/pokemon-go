@@ -4,16 +4,16 @@ import (
 	"testing"
 
 	. "github.com/smartystreets/goconvey/convey"
-	Pokemon "pokemon-go/data"
-	Helpers "pokemon-go/helpers"
+
+	"pokemon-go/helpers"
+	"pokemon-go/repository"
 )
 
 func TestInsertPokemonService(t *testing.T) {
-
 	Convey("Insert Pokemon Service", t, func() {
 
 		Convey("Preparation Insert Pokemon Data", func() {
-			newPokemon := Pokemon.Type{
+			newPokemon := repository.Pokemon{
 				ID:   0,
 				Name: "Chameleon",
 				Types: []string{
@@ -26,13 +26,12 @@ func TestInsertPokemonService(t *testing.T) {
 					"Grass",
 				},
 			}
+			pokemonRepositoryMock.Mock.On("Insert", newPokemon).Return(nil)
 
-			service := NewInsertPokemonService(PokemonService{
-				Pokemons: Pokemon.GetMockData(),
-			}, newPokemon)
+			service := NewInsertPokemonService(pokemonRepositoryMock, newPokemon)
 
 			expectedHttpCode, expectedResponseData :=
-				Helpers.SuccessResponse("INSERT_SUCCESSFUL", nil)
+				helpers.SuccessResponse("INSERT_SUCCESSFUL", nil)
 
 			Convey("Insert Pokemon Data", func() {
 				httpCode, responseData := service.Run()

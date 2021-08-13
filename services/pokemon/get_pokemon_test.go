@@ -4,24 +4,27 @@ import (
 	"testing"
 
 	. "github.com/smartystreets/goconvey/convey"
-	Pokemon "pokemon-go/data"
-	Helpers "pokemon-go/helpers"
+
+	"pokemon-go/helpers"
+	"pokemon-go/repository"
 )
 
 func TestGetPokemonService(t *testing.T) {
-
 	Convey("Get Pokemon Service", t, func() {
 
 		Convey("Preparation Get Pokemon Data", func() {
-			searchedPokemonId := 2
-			searchedPokemonIndex, _ := Pokemon.SearchData(*Pokemon.GetMockData(), searchedPokemonId)
+			searchedPokemon := repository.Pokemon{
+				ID:         2,
+				Name:       "Charmeleon",
+				Types:      []string{"Fire"},
+				Weaknesses: []string{"Water", "Ground", "Rock"},
+			}
+			pokemonRepositoryMock.Mock.On("GetById", 2).Return(searchedPokemon)
 
-			service := NewGetPokemonService(PokemonService{
-				Pokemons: Pokemon.GetMockData(),
-			}, searchedPokemonId)
+			service := NewGetPokemonService(pokemonRepositoryMock, searchedPokemon.ID)
 
 			expectedHttpCode, expectedResponseData :=
-				Helpers.SuccessResponse("DATA_FOUND", (*Pokemon.GetMockData())[searchedPokemonIndex])
+				helpers.SuccessResponse("DATA_FOUND", searchedPokemon)
 
 			Convey("Get Pokemon Data", func() {
 				httpCode, responseData := service.Run()
@@ -32,14 +35,13 @@ func TestGetPokemonService(t *testing.T) {
 		})
 
 		Convey("Preparation Not Found Pokemon Data", func() {
-			searchedPokemonId := 10
+			notFoundPokemonId := 10
+			pokemonRepositoryMock.Mock.On("GetById", notFoundPokemonId).Return(nil)
 
-			service := NewGetPokemonService(PokemonService{
-				Pokemons: Pokemon.GetMockData(),
-			}, searchedPokemonId)
+			service := NewGetPokemonService(pokemonRepositoryMock, notFoundPokemonId)
 
 			expectedHttpCode, expectedResponseData :=
-				Helpers.DataNotFoundResponse()
+				helpers.DataNotFoundResponse()
 
 			Convey("Get Not Found Pokemon Data", func() {
 				httpCode, responseData := service.Run()

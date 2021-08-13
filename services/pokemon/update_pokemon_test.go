@@ -4,16 +4,16 @@ import (
 	"testing"
 
 	. "github.com/smartystreets/goconvey/convey"
-	Pokemon "pokemon-go/data"
-	Helpers "pokemon-go/helpers"
+
+	"pokemon-go/helpers"
+	"pokemon-go/repository"
 )
 
 func TestUpdatePokemonService(t *testing.T) {
-
 	Convey("Update Pokemon Service", t, func() {
 
 		Convey("Preparation Update Pokemon Data", func() {
-			existedPokemon := Pokemon.Type{
+			existedPokemon := repository.Pokemon{
 				ID:   1,
 				Name: "Bulbasaur",
 				Types: []string{
@@ -27,13 +27,12 @@ func TestUpdatePokemonService(t *testing.T) {
 					"Psychic",
 				},
 			}
+			pokemonRepositoryMock.Mock.On("Update", existedPokemon).Return(existedPokemon)
 
-			service := NewUpdatePokemonService(PokemonService{
-				Pokemons: Pokemon.GetMockData(),
-			}, existedPokemon)
+			service := NewUpdatePokemonService(pokemonRepositoryMock, existedPokemon)
 
 			expectedHttpCode, expectedResponseData :=
-				Helpers.SuccessResponse("UPDATE_SUCCESSFUL", nil)
+				helpers.SuccessResponse("UPDATE_SUCCESSFUL", nil)
 
 			Convey("Update Pokemon Data", func() {
 				httpCode, responseData := service.Run()
@@ -44,7 +43,7 @@ func TestUpdatePokemonService(t *testing.T) {
 		})
 
 		Convey("Preparation Not Found Pokemon Data", func() {
-			existedPokemon := Pokemon.Type{
+			notFoundPokemon := repository.Pokemon{
 				ID:   10,
 				Name: "Bulbasaur",
 				Types: []string{
@@ -58,13 +57,12 @@ func TestUpdatePokemonService(t *testing.T) {
 					"Psychic",
 				},
 			}
+			pokemonRepositoryMock.Mock.On("Update", notFoundPokemon).Return(nil)
 
-			service := NewUpdatePokemonService(PokemonService{
-				Pokemons: Pokemon.GetMockData(),
-			}, existedPokemon)
+			service := NewUpdatePokemonService(pokemonRepositoryMock, notFoundPokemon)
 
 			expectedHttpCode, expectedResponseData :=
-				Helpers.DataNotFoundResponse()
+				helpers.DataNotFoundResponse()
 
 			Convey("Not Found Pokemon Data", func() {
 				httpCode, responseData := service.Run()

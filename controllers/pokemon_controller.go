@@ -5,80 +5,91 @@ import (
 	"net/http"
 	"strconv"
 
-	Pokemon "pokemon-go/data"
-	Helpers "pokemon-go/helpers"
-	PokemonServices "pokemon-go/services/pokemon"
+	"pokemon-go/helpers"
+	"pokemon-go/repository"
+	pokemonServices "pokemon-go/services/pokemon"
 )
 
 var (
 	httpCode     int
-	responseData Helpers.Response
+	responseData helpers.Response
 )
 
-var pokemonService = PokemonServices.PokemonService{
-	Pokemons: Pokemon.GetData(),
-}
+// JSON REPOSITORY
+var pokemonRepository = &repository.PokemonJsonRepo{}
 
 func GetAllPokemon(resp http.ResponseWriter, req *http.Request) {
 	if req.URL.Path == "/" {
-		getAllPokemonService := PokemonServices.NewGetAllPokemonService(pokemonService)
+		getAllPokemonService := pokemonServices.NewGetAllPokemonService(
+			pokemonRepository,
+		)
 		httpCode, responseData = getAllPokemonService.Run()
 	} else {
-		httpCode, responseData = Helpers.PageNotFoundResponse()
+		httpCode, responseData = helpers.PageNotFoundResponse()
 	}
 
-	Helpers.SendResponse(resp, httpCode, responseData)
+	helpers.SendResponse(resp, httpCode, responseData)
 }
 
 func GetPokemon(resp http.ResponseWriter, req *http.Request) {
 	pokemonId, err := strconv.Atoi(req.URL.Query().Get("id"))
 
 	if err == nil {
-		getPokemonService := PokemonServices.NewGetPokemonService(pokemonService, pokemonId)
+		getPokemonService := pokemonServices.NewGetPokemonService(
+			pokemonRepository,
+			pokemonId,
+		)
 		httpCode, responseData = getPokemonService.Run()
 	} else {
-		httpCode, responseData = Helpers.InternalServerErrorResponse()
+		httpCode, responseData = helpers.InternalServerErrorResponse()
 	}
 
-	Helpers.SendResponse(resp, httpCode, responseData)
+	helpers.SendResponse(resp, httpCode, responseData)
 }
 
 func InsertNewPokemon(resp http.ResponseWriter, req *http.Request) {
 	switch req.Method {
 	case "POST":
-		var newPokemon Pokemon.Type
+		var newPokemon repository.Pokemon
 		json.NewDecoder(req.Body).Decode(&newPokemon)
 
-		if newPokemon.Name != "" && len(newPokemon.Types) > 0 && len(newPokemon.Weaknesses) > 0 {
-			insertPokemonService := PokemonServices.NewInsertPokemonService(pokemonService, newPokemon)
+		if newPokemon.Name != "" && len(newPokemon.Types) > 0 &&
+			len(newPokemon.Weaknesses) > 0 {
+			insertPokemonService := pokemonServices.NewInsertPokemonService(
+				pokemonRepository, newPokemon,
+			)
 			httpCode, responseData = insertPokemonService.Run()
 		} else {
-			httpCode, responseData = Helpers.InvalidRequestResponse()
+			httpCode, responseData = helpers.InvalidRequestResponse()
 		}
 	default:
-		httpCode, responseData = Helpers.MethodNotAllowedResponse()
+		httpCode, responseData = helpers.MethodNotAllowedResponse()
 	}
 
-	Helpers.SendResponse(resp, httpCode, responseData)
+	helpers.SendResponse(resp, httpCode, responseData)
 }
 
 func UpdatePokemon(resp http.ResponseWriter, req *http.Request) {
 	switch req.Method {
 	case "POST":
-		var updatedPokemon Pokemon.Type
+		var updatedPokemon repository.Pokemon
 		json.NewDecoder(req.Body).Decode(&updatedPokemon)
 
-		if updatedPokemon.ID > 0 && updatedPokemon.Name != "" && len(updatedPokemon.Types) > 0 && len(updatedPokemon.Weaknesses) > 0 {
-			updatePokemonService := PokemonServices.NewUpdatePokemonService(pokemonService, updatedPokemon)
+		if updatedPokemon.ID > 0 && updatedPokemon.Name != "" &&
+			len(updatedPokemon.Types) > 0 && len(updatedPokemon.Weaknesses) > 0 {
+			updatePokemonService := pokemonServices.NewUpdatePokemonService(
+				pokemonRepository,
+				updatedPokemon,
+			)
 			httpCode, responseData = updatePokemonService.Run()
 		} else {
-			httpCode, responseData = Helpers.InvalidRequestResponse()
+			httpCode, responseData = helpers.InvalidRequestResponse()
 		}
 	default:
-		httpCode, responseData = Helpers.MethodNotAllowedResponse()
+		httpCode, responseData = helpers.MethodNotAllowedResponse()
 	}
 
-	Helpers.SendResponse(resp, httpCode, responseData)
+	helpers.SendResponse(resp, httpCode, responseData)
 }
 
 func DeletePokemon(resp http.ResponseWriter, req *http.Request) {
@@ -87,14 +98,17 @@ func DeletePokemon(resp http.ResponseWriter, req *http.Request) {
 		pokemonId, err := strconv.Atoi(req.URL.Query().Get("id"))
 
 		if err == nil {
-			deletePokemonService := PokemonServices.NewDeletePokemonService(pokemonService, pokemonId)
+			deletePokemonService := pokemonServices.NewDeletePokemonService(
+				pokemonRepository,
+				pokemonId,
+			)
 			httpCode, responseData = deletePokemonService.Run()
 		} else {
-			httpCode, responseData = Helpers.InternalServerErrorResponse()
+			httpCode, responseData = helpers.InternalServerErrorResponse()
 		}
 	default:
-		httpCode, responseData = Helpers.MethodNotAllowedResponse()
+		httpCode, responseData = helpers.MethodNotAllowedResponse()
 	}
 
-	Helpers.SendResponse(resp, httpCode, responseData)
+	helpers.SendResponse(resp, httpCode, responseData)
 }

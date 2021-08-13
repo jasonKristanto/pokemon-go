@@ -4,8 +4,9 @@ import (
 	"testing"
 
 	. "github.com/smartystreets/goconvey/convey"
-	Pokemon "pokemon-go/data"
-	Helpers "pokemon-go/helpers"
+
+	"pokemon-go/helpers"
+	"pokemon-go/repository"
 )
 
 func TestDeletePokemonService(t *testing.T) {
@@ -13,16 +14,20 @@ func TestDeletePokemonService(t *testing.T) {
 	Convey("Delete Pokemon Service", t, func() {
 
 		Convey("Preparation Delete Pokemon Data", func() {
-			deletedPokemonId := 3
+			deletedPokemon := repository.Pokemon{
+				ID:         5,
+				Name:       "Kakuna",
+				Types:      []string{"Bug", "Poison"},
+				Weaknesses: []string{"Fire", "Flying", "Psychic", "Rock"},
+			}
+			pokemonRepositoryMock.Mock.On("Delete", deletedPokemon.ID).Return(deletedPokemon)
 
-			service := NewDeletePokemonService(PokemonService{
-				Pokemons: Pokemon.GetMockData(),
-			}, deletedPokemonId)
+			service := NewDeletePokemonService(pokemonRepositoryMock, deletedPokemon.ID)
 
 			expectedHttpCode, expectedResponseData :=
-				Helpers.SuccessResponse("DELETE_SUCCESSFUL", nil)
+				helpers.SuccessResponse("DELETE_SUCCESSFUL", nil)
 
-			Convey("Get Pokemon Data", func() {
+			Convey("Delete Pokemon Data", func() {
 				httpCode, responseData := service.Run()
 
 				So(httpCode, ShouldEqual, expectedHttpCode)
@@ -31,16 +36,15 @@ func TestDeletePokemonService(t *testing.T) {
 		})
 
 		Convey("Preparation Not Found Pokemon Data", func() {
-			deletedPokemonId := 10
+			notFoundPokemonId := 10
+			pokemonRepositoryMock.Mock.On("Delete", notFoundPokemonId).Return(nil)
 
-			service := NewDeletePokemonService(PokemonService{
-				Pokemons: Pokemon.GetMockData(),
-			}, deletedPokemonId)
+			service := NewDeletePokemonService(pokemonRepositoryMock, notFoundPokemonId)
 
 			expectedHttpCode, expectedResponseData :=
-				Helpers.DataNotFoundResponse()
+				helpers.DataNotFoundResponse()
 
-			Convey("Get Not Found Pokemon Data", func() {
+			Convey("Found Pokemon Data", func() {
 				httpCode, responseData := service.Run()
 
 				So(httpCode, ShouldEqual, expectedHttpCode)

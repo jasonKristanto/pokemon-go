@@ -1,34 +1,31 @@
 package services
 
 import (
-	Pokemon "pokemon-go/data"
-	Helpers "pokemon-go/helpers"
+	"pokemon-go/helpers"
+	"pokemon-go/repository"
 )
 
 type UpdatePokemonService struct {
-	PokemonService
-	updatedPokemon Pokemon.Type
+	Repository     repository.IBasePokemonRepository
+	updatedPokemon repository.Pokemon
 }
 
-func NewUpdatePokemonService(pokemonService PokemonService, updatedPokemon Pokemon.Type) IBasePokemonService {
+func NewUpdatePokemonService(
+	repository repository.IBasePokemonRepository,
+	updatedPokemon repository.Pokemon,
+) IBasePokemonService {
 	return &UpdatePokemonService{
-		PokemonService: pokemonService,
+		Repository:     repository,
 		updatedPokemon: updatedPokemon,
 	}
 }
 
-func (service *UpdatePokemonService) Run() (int, Helpers.Response) {
-	pokemonIndex, err := Pokemon.SearchData(*service.Pokemons, service.updatedPokemon.ID)
+func (service *UpdatePokemonService) Run() (int, helpers.Response) {
+	err := service.Repository.Update(service.updatedPokemon)
 
 	if err == nil {
-		(*service.Pokemons)[pokemonIndex] = Pokemon.Type {
-			ID: (*service.Pokemons)[pokemonIndex].ID,
-			Name: service.updatedPokemon.Name,
-			Types: service.updatedPokemon.Types,
-			Weaknesses: service.updatedPokemon.Weaknesses,
-		}
-		return Helpers.SuccessResponse("UPDATE_SUCCESSFUL", nil)
+		return helpers.SuccessResponse("UPDATE_SUCCESSFUL", nil)
 	}
 
-	return Helpers.DataNotFoundResponse()
+	return helpers.DataNotFoundResponse()
 }

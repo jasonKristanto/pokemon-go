@@ -1,30 +1,25 @@
 package services
 
 import (
-	Pokemon "pokemon-go/data"
-	Helpers "pokemon-go/helpers"
+	"pokemon-go/helpers"
+	"pokemon-go/repository"
 )
 
 type InsertPokemonService struct {
-	PokemonService
-	newPokemon Pokemon.Type
+	Repository repository.IBasePokemonRepository
+	newPokemon repository.Pokemon
 }
 
-func NewInsertPokemonService(pokemonService PokemonService, newPokemon Pokemon.Type) IBasePokemonService {
+func NewInsertPokemonService(
+	repository repository.IBasePokemonRepository, newPokemon repository.Pokemon,
+) IBasePokemonService {
 	return &InsertPokemonService{
-		PokemonService: pokemonService,
+		Repository: repository,
 		newPokemon: newPokemon,
 	}
 }
 
-func getNewPokemonId(pokemons []Pokemon.Type) int {
-	lastPokemon := pokemons[len(pokemons) - 1]
-	return lastPokemon.ID + 1
-}
-
-func (service *InsertPokemonService) Run() (int, Helpers.Response) {
-	service.newPokemon.ID = getNewPokemonId(*service.Pokemons)
-	*service.Pokemons = append(*service.Pokemons, service.newPokemon)
-
-	return Helpers.SuccessResponse("INSERT_SUCCESSFUL", nil)
+func (service *InsertPokemonService) Run() (int, helpers.Response) {
+	_ = service.Repository.Insert(service.newPokemon)
+	return helpers.SuccessResponse("INSERT_SUCCESSFUL", nil)
 }
